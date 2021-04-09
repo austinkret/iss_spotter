@@ -23,8 +23,7 @@ const fetchCoordsByIP = (ipData, callback) => {
       return;
     }
     if (response.statusCode !== 200) {
-      const message = `Status Code ${response.statusCode} when fetching the GeoIP. Response: ${body}`;
-      callback(Error(message), null);
+      callback(Error(`Status Code ${response.statusCode} when fetching the GeoIP. Response: ${body}`), null);
       return;
     }
     const location = {
@@ -42,8 +41,7 @@ const fetchISSFlyOverTimes = function(location, callback) {
       return;
     }
     if (response.statusCode !== 200) {
-      const message = `Status Code ${response.statusCode} when fetching the flyover times of the ISS. Response: ${body}`;
-      callback(Error(message), null);
+      callback(Error(`Status Code ${response.statusCode} when fetching the flyover times of the ISS. Response: ${body}`), null);
       return;
     }
     const flyOver = JSON.parse(body).response;
@@ -51,9 +49,28 @@ const fetchISSFlyOverTimes = function(location, callback) {
   });
 };
 
+const nextISSTimesForMyLocation = (callback) => {
+  fetchMyIP((error, ipData) => {
+    if (error) {
+      callback(error, null);
+    }
+    fetchCoordsByIP(ipData, (error, location) => {
+      if (error) {
+        callback(error, null);
+      }
+      fetchISSFlyOverTimes(location, (error, passTimes) => {
+        if (error) {
+          callback(error, null);
+        }
+        callback(null, passTimes);
+      });
+    });
+  });
+};
 
 module.exports = {
-  fetchMyIP,
-  fetchCoordsByIP,
-  fetchISSFlyOverTimes
+  // fetchMyIP,
+  // fetchCoordsByIP,
+  // fetchISSFlyOverTimes,
+  nextISSTimesForMyLocation
 };
